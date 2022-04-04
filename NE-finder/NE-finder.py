@@ -36,11 +36,13 @@ def findNashEquilibrium(signalDistribution, eps=0.1, samples=30):
                                                         int(j/(samples+1))/samples, (j % (samples+1))/samples], yourStrategy=[int(i/(samples+1))/samples, (i % (samples+1))/samples], eps = eps)
     nashEquilibriums = []
     for j in trange((samples+1)*(samples+1)):
-        i = np.argmax(payoffMatrix1[:, j])
-        if j == np.argmax(payoffMatrix2[i]):
-            nashEquilibriums.append((int(i/(samples+1))/samples, (i%(samples+1))/samples, int(j/(samples+1))/samples, (j%(samples+1))/samples))
+        for i in range((samples+1)*(samples+1)):
+            if np.max(payoffMatrix1[:,j]) == payoffMatrix1[i][j] and np.max(payoffMatrix2[i]) == payoffMatrix2[i][j]:
+                nashEquilibriums.append((int(i/(samples+1))/samples, (i%(samples+1))/samples, int(j/(samples+1))/samples, (j%(samples+1))/samples))
 
     return nashEquilibriums
 
-
-print(findNashEquilibrium([0.6, 0.1, 0.1, 0.2]))
+print(findNashEquilibrium([0.8, 0.05, 0.05, 0.1]))
+# signal = np.random.rand(4)
+# print(computeExpectedPayoff(signal, [0.5, 0.5], np.random.rand(2), 0.1))
+# print(computeExpectedPayoff(signal, [0.5, 0.5], np.random.rand(2), 0.1))
