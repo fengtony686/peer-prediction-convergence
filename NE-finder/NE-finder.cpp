@@ -13,8 +13,8 @@ float computeExpectedPayoff(double signalDistribution[4], double myStrategy[2], 
 
     double term3 = (signalDistribution[0] + signalDistribution[1]) * (signalDistribution[0] + signalDistribution[2]) * (myStrategy[0] * yourStrategy[0] + (1 - myStrategy[0]) * (1 - yourStrategy[0])) + (signalDistribution[0] + signalDistribution[1]) * (signalDistribution[1] + signalDistribution[3]) * (myStrategy[0] * (1 - yourStrategy[1]) + (1 - myStrategy[0]) * yourStrategy[1]) + (signalDistribution[2] + signalDistribution[3]) * (signalDistribution[0] + signalDistribution[2]) * ((1 - myStrategy[1]) * yourStrategy[0] + myStrategy[1] * (1 - yourStrategy[0])) + (signalDistribution[2] + signalDistribution[3]) * (signalDistribution[1] + signalDistribution[3]) * ((1 - myStrategy[1]) * (1 - yourStrategy[1]) + myStrategy[1] * yourStrategy[1]);
 
-    // return float(term1 - term2 - term3);
-    return float(term1 - term2);
+    return float(term1 - term2 - term3);
+    // return float(term1 - term2);
 }
 
 auto findNashEquilibrium(double signalDistribution[4], double eps = 0.1, int samples = 30)
@@ -66,8 +66,8 @@ auto findNashEquilibrium(double signalDistribution[4], double eps = 0.1, int sam
 
 int main()
 {
-    double signal[4] = {0.65, 0.1, 0.1, 0.15};
-    auto result = findNashEquilibrium(signal, 1);
+    double signal[4] = {0.9, 0.2, 0.01, 0.21};
+    auto result = findNashEquilibrium(signal, 0.1);
     dbg(result);
     return 0;
 }
