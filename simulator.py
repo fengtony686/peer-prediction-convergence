@@ -7,6 +7,11 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 
 
+'''
+--------------------- Class of Game ----------------------------
+'''
+
+
 class informationElicitationGame:
     def __init__(self, probabilityDict, mechanism):
         self.mechanism = mechanism
@@ -16,6 +21,7 @@ class informationElicitationGame:
         self.strategyNum = np.power(self.optionNum, self.optionNum)
         self.reports = np.array([[] for _ in range(self.agentNum)])
         self.options = np.array([[] for _ in range(self.agentNum)])
+        self.signals = np.array([[] for _ in range(self.agentNum)])
         self.agents = []
 
     def setAgents(self, strategy):
@@ -40,7 +46,77 @@ class informationElicitationGame:
                 leftBound = rightBound
         return nan
 
-    # Here are the mechanism functions.
+    def addReports(self, currentReport, currentOptions, currentSignals):
+        self.reports = np.hstack((self.reports, np.array([currentReport]).T))
+        # print(self.reports, currentReport)
+        self.options = np.hstack((self.options, np.array([currentOptions]).T))
+        self.signals = np.hstack((self.signals, np.array([currentSignals]).T))
+        for index, i in enumerate(currentReport):
+            self.agents[index].reports.append(i)
+            self.agents[index].options.append(currentOptions[index])
+
+    # Processing one round of game.
+    def run(self):
+        signals = self.generateSignals()
+        currentOptions = []
+        for i in range(self.agentNum):
+            currentOptions.append(self.agents[i].chooseOption())
+        currentReports = []
+        for i in range(self.agentNum):
+            currentReports.append(self.optionToReport(
+                currentOptions[i], signals[i]))
+        for i in range(self.agentNum):
+            allStrategyPayoff = []
+            for strategy in range(self.strategyNum):
+                if self.mechanism == "Gap DMI":
+                    if self.reports.shape[1] % (2 * self.optionNum) != 2*self.optionNum - 1:
+                        allStrategyPayoff.append(0)
+                    else:
+                        reportsMat = np.zeros(
+                            (self.agentNum, 2 * self.optionNum))
+                        for j in range(self.agentNum):
+                            for k in range(2 * self.optionNum - 1):
+                                if j != i:
+                                    reportsMat[j][k] = self.reports[j][-2 *
+                                                                       self.optionNum + 1 + k]
+                                else:
+                                    reportsMat[j][k] = self.optionToReport(
+                                        strategy, self.signals[j][-2 * self.optionNum + 1 + k])
+                        for j in range(self.agentNum):
+                            if j != i:
+                                reportsMat[j][-1] = currentReports[j]
+                            else:
+                                reportsMat[j][-1] = self.optionToReport(
+                                    strategy, signals[j])
+                        allStrategyPayoff.append(self.GapDMI(reportsMat, i))
+
+                counterfactualReports = currentReports.copy()
+                counterfactualReports[i] = self.optionToReport(
+                    strategy, signals[i])
+                if self.mechanism == "Self Agreement":
+                    allStrategyPayoff.append(
+                        self.selfAgreement(counterfactualReports, i))
+                elif self.mechanism == "Dynamic Self Agreement":
+                    allStrategyPayoff.append(
+                        self.dynamicSelfAgreement(counterfactualReports, i))
+                elif self.mechanism == "Dynamic Mixed Agreement":
+                    allStrategyPayoff.append(
+                        self.dynamicMixedAgreement(counterfactualReports, i))
+                elif self.mechanism == "Agreement":
+                    allStrategyPayoff.append(
+                        self.agreement(counterfactualReports, i))
+                elif self.mechanism == "DMI":
+                    allStrategyPayoff.append(
+                        self.DMI(counterfactualReports, i))
+            self.agents[i].possiblePayoffs = np.hstack(
+                (self.agents[i].possiblePayoffs, np.array([allStrategyPayoff]).T))
+        self.addReports(currentReports, currentOptions, signals)
+        # print(currentReports)
+
+    '''
+    ------------------------ Here are the Mechanism Functions -----------------------
+    '''
+
     def dynamicSelfAgreement(self, currentReport, currentAgentIndex):
         payoff = -1
         if (self.reports.shape[1] == 0):
@@ -50,7 +126,7 @@ class informationElicitationGame:
                 payoff += 1
         payoff /= len(currentReport) - 1
         payoff -= (self.reports[currentAgentIndex][-1] ==
-                   currentReport[currentAgentIndex]) / (self.reports.shape[1] + 1)
+                   currentReport[currentAgentIndex]) / (self.reports.shape[1] + 1) * 2
         payoff += 1
         return payoff
 
@@ -123,50 +199,30 @@ class informationElicitationGame:
         #     print(currentReport, self.reports[currentAgentIndex][-1])
         return payoff
 
-    def addReports(self, currentReport, currentOptions):
-        self.reports = np.hstack((self.reports, np.array([currentReport]).T))
-        # print(self.reports, currentReport)
-        self.options = np.hstack((self.options, np.array([currentOptions]).T))
-        for index, i in enumerate(currentReport):
-            self.agents[index].reports.append(i)
-            self.agents[index].options.append(currentOptions[index])
+    def GapDMI(self, currentReport, currentAgentIndex):
+        if (self.reports.shape[1] % (2 * self.optionNum) != 2 * self.optionNum - 1):
+            return 0
+        payoff = 0
+        for i in range(self.agentNum):
+            if i != currentAgentIndex:
+                frequencyMatrix1 = np.zeros((self.optionNum, self.optionNum))
+                frequencyMatrix2 = np.zeros((self.optionNum, self.optionNum))
+                for j in range(self.optionNum):
+                    frequencyMatrix1[int(currentReport[i][-self.optionNum-j-1])][int(
+                        currentReport[currentAgentIndex][-self.optionNum-j-1])] += 1
+                for j in range(self.optionNum):
+                    frequencyMatrix2[int(currentReport[i][-1-j])
+                                     ][int(currentReport[currentAgentIndex][-1-j])] += 1
+                payoff += np.linalg.det(frequencyMatrix1) * \
+                    np.linalg.det(frequencyMatrix2)
+        # if payoff != 0:
+        #     print(payoff)
+        return payoff
 
-    # Processing one round of game.
-    def run(self):
-        signals = self.generateSignals()
-        currentOptions = []
-        for i in range(self.agentNum):
-            currentOptions.append(self.agents[i].chooseOption())
-        currentReports = []
-        for i in range(self.agentNum):
-            currentReports.append(self.optionToReport(
-                currentOptions[i], signals[i]))
-        # print(currentReports, currentOptions, signals)
-        for i in range(self.agentNum):
-            allStrategyPayoff = []
-            for strategy in range(self.strategyNum):
-                counterfactualReports = currentReports.copy()
-                counterfactualReports[i] = self.optionToReport(
-                    strategy, signals[i])
-                if self.mechanism == "Self Agreement":
-                    allStrategyPayoff.append(
-                        self.selfAgreement(counterfactualReports, i))
-                elif self.mechanism == "Dynamic Self Agreement":
-                    allStrategyPayoff.append(
-                        self.dynamicSelfAgreement(counterfactualReports, i))
-                elif self.mechanism == "Dynamic Mixed Agreement":
-                    allStrategyPayoff.append(
-                        self.dynamicMixedAgreement(counterfactualReports, i))
-                elif self.mechanism == "Agreement":
-                    allStrategyPayoff.append(
-                        self.agreement(counterfactualReports, i))
-                elif self.mechanism == "DMI":
-                    allStrategyPayoff.append(
-                        self.DMI(counterfactualReports, i))
-            self.agents[i].possiblePayoffs = np.hstack(
-                (self.agents[i].possiblePayoffs, np.array([allStrategyPayoff]).T))
-        self.addReports(currentReports, currentOptions)
-        # print(currentReports)
+
+'''
+----------------------- Class of Agents --------------------------
+'''
 
 
 class agent:
@@ -180,11 +236,23 @@ class agent:
         self.possiblePayoffs = np.array([[] for _ in range(self.strategyNum)])
 
     def chooseOption(self):
-        if self.strategy == "FLP":
+        if self.strategy == "FPL10":
             accumulateRewards = np.array([])
             for i in range(self.strategyNum):
                 accumulateRewards = np.append(accumulateRewards, np.sum(
                     self.possiblePayoffs[i]) + np.random.rand() * 10)
+            return np.argmax(accumulateRewards)
+        elif self.strategy == "FPL20":
+            accumulateRewards = np.array([])
+            for i in range(self.strategyNum):
+                accumulateRewards = np.append(accumulateRewards, np.sum(
+                    self.possiblePayoffs[i]) + np.random.rand() * 20)
+            return np.argmax(accumulateRewards)
+        elif self.strategy == "FPL5":
+            accumulateRewards = np.array([])
+            for i in range(self.strategyNum):
+                accumulateRewards = np.append(accumulateRewards, np.sum(
+                    self.possiblePayoffs[i]) + np.random.rand() * 5)
             return np.argmax(accumulateRewards)
         elif self.strategy == "Replicator Dynamics":
             if len(self.reports) == 0:
@@ -262,30 +330,86 @@ class agent:
             return np.argmax(upperConfidenceBound)
 
 
+'''
+----------------------- Converge Rate Drawing ---------------------------------
+'''
+
+
+def drawConvergeRate(numOfRounds, numOfRepeating, probabilityMatrix, mechanism, algorithm):
+    convergeTimes = np.zeros(numOfRounds)
+    for i in trange(numOfRepeating):
+        newGame = informationElicitationGame(probabilityMatrix, mechanism)
+        newGame.setAgents(algorithm)
+        for _ in range(numOfRounds):
+            newGame.run()
+        index = numOfRounds - 1
+        if newGame.options[0][-1] != newGame.options[1][-1]:
+            continue
+        converge = True
+        for j in range(numOfRounds):
+            if newGame.options[0][index] == newGame.options[0][-1]:
+                convergeTimes[index] += converge
+            else:
+                converge = False
+            index -= 1
+        converge = True
+        for j in range(numOfRounds):
+            if newGame.options[1][index] == newGame.options[1][-1]:
+                convergeTimes[index] += converge
+            else:
+                converge = False
+            index -= 1
+    convergeTimes = convergeTimes / (2 * numOfRepeating)
+    plt.rcParams['figure.figsize'] = (25.0, 6.0)
+    plt.plot(np.arange(numOfRounds), convergeTimes,
+             label=mechanism+", "+algorithm)
+    plt.xlabel("Round")
+    plt.ylabel("Converge Proportion")
+    plt.legend(loc="best")
+
+
+'''
+----------------------- Comparison of Converge Rate ----------------------------
+'''
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Dynamic Mixed Agreement", "FPL5")
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Agreement", "FPL5")
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Dynamic Mixed Agreement", "FPL10")
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Agreement", "FPL10")
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Agreement", "Memoryless Replicator Dynamics")
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Dynamic Mixed Agreement", "FPL20")
+# drawConvergeRate(800, 200, {(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Agreement", "FPL20")
+# plt.show()
+
+
+'''
+------------------------- Draw the Strategies Used in One Game -------------------
+'''
+
 # newGame = informationElicitationGame(
-#     {(0, 0): 0.2, (1, 1): 0.2, (2, 2): 0.2, (0, 1): 0.06, (1, 0): 0.06, (0, 2): 0.07, (2, 0): 0.07, (1, 2): 0.07, (2, 1): 0.07}, "DMI")
+# {(0, 0): 0.2, (1, 1): 0.2, (2, 2): 0.2, (0, 1): 0.06, (1, 0): 0.06, (0, 2): 0.07, (2, 0): 0.07, (1, 2): 0.07, (2, 1): 0.07}, "Gap DMI")
+# newGame = informationElicitationGame(
+#     {(0, 0): 0.06, (0, 1): 0.02, (1, 0): 0.02, (1, 1): 0.9}, "DMI")
 newGame = informationElicitationGame(
-    {(0, 0): 0.06, (0, 1): 0.02, (1, 0): 0.02, (1, 1): 0.9}, "DMI")
-# newGame = informationElicitationGame(
-# {(0, 0): 0.03, (0, 1): 0.01, (1, 0): 0.01, (1, 1): 0.95}, "Self Agreement")
-# newGame.setAgents("FLP")
-newGame.setAgents("Memoryless Replicator Dynamics")
+{(0, 0): 0.3, (0, 1): 0.1, (1, 0): 0.3, (1, 1): 0.3}, "Gap DMI")
+newGame.setAgents("FPL10")
+# newGame.setAgents("UCB")
+# newGame.setAgents("Memoryless Replicator Dynamics")
 for i in trange(10000):
     newGame.run()
 
-# print(
-#     np.sum(
-#         newGame.agents[1].possiblePayoffs[0]), np.sum(
-#             newGame.agents[1].possiblePayoffs[1]), np.sum(
-#                 newGame.agents[1].possiblePayoffs[2]), np.sum(
-#                     newGame.agents[1].possiblePayoffs[3]))
-# print(
-#     np.sum(
-#         newGame.agents[0].possiblePayoffs[0]), np.sum(
-#             newGame.agents[0].possiblePayoffs[1]), np.sum(
-#                 newGame.agents[0].possiblePayoffs[2]), np.sum(
-#                     newGame.agents[0].possiblePayoffs[3]))
-print(newGame.agents[1].strategyProbList)
+print(
+    np.sum(
+        newGame.agents[1].possiblePayoffs[0]), np.sum(
+            newGame.agents[1].possiblePayoffs[1]), np.sum(
+                newGame.agents[1].possiblePayoffs[2]), np.sum(
+                    newGame.agents[1].possiblePayoffs[3]))
+print(
+    np.sum(
+        newGame.agents[0].possiblePayoffs[0]), np.sum(
+            newGame.agents[0].possiblePayoffs[1]), np.sum(
+                newGame.agents[0].possiblePayoffs[2]), np.sum(
+                    newGame.agents[0].possiblePayoffs[3]))
+# print(newGame.agents[1].strategyProbList)
 
 y_major_locator = MultipleLocator(1)
 plt.rcParams['figure.figsize'] = (25.0, 6.0)
