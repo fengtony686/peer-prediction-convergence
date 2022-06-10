@@ -7,12 +7,12 @@ This repository contains code of numerical experiments for paper:
 ## Usage
 If you want to draw convergence rates of learning algorithms in CA mechanism, you need to run
 ```
-python main.py --converge-rate
+python main.py --converge_rate
 ```
 
 If you want to draw error bars for convergence rates of learning algorithms in CA mechanism, you need to run
 ```
-python main.py --error-bar
+python main.py --error_bar
 ```
 
 ## Contact
