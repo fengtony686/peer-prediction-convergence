@@ -1,5 +1,5 @@
 # Peer Prediction for Learning Agents
-This repository contains the implementation code for paper:  
+This repository contains code of numerical experiments for paper:  
 **Peer Prediction for Learning Agents**  
 [Shi Feng](https://fengshi.link), [Fang-Yi Yu](http://www-personal.umich.edu/~fayu/), [Yiling Chen](https://yiling.seas.harvard.edu/)  
 [[ArXiv Version](not available yet)]
