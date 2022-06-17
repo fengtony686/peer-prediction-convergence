@@ -5,10 +5,10 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--converge_rate", action="store_true", help="draw converge rates of learning algorithms")
-parser.add_argument("--error_bar", action="store_true", help="draw error bars for converge rates of learning algorithms")
+parser.add_argument("--error_bar", action="store_true",
+                    help="draw error bars for converge rates of learning algorithms")
 args = parser.parse_args()
-probDict = {(0, 0): 0.4, (0, 1): 0.2, (1, 0): 0.2, (1, 1): 0.4} # Distribution of private signals
-
+probDict = {(0, 0): 0.4, (0, 1): 0.2, (1, 0): 0.2, (1, 1): 0.4}  # Distribution of private signals
 
 '''
 ----------------------- Comparison of Converge Rate ----------------------------
@@ -23,7 +23,6 @@ if args.converge_rate:
     drawConvergeRate(800, 400, probDict, "Hedge Algorithm 1")
     drawConvergeRate(800, 400, probDict, "Hedge Algorithm 2")
     plt.savefig("./results/converge_rate.png")
-
 
 '''
 ----------------------- Draw Error Bars ----------------------------

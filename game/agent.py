@@ -60,7 +60,7 @@ class agent:
             randomSeed = np.random.rand()
             tmpTotal = 0
             for index, i in enumerate(self.strategyProbList):
-                if tmpTotal <= randomSeed and tmpTotal + i > randomSeed:
+                if tmpTotal <= randomSeed < tmpTotal + i:
                     return index
                 else:
                     tmpTotal += i
@@ -85,7 +85,7 @@ class agent:
             randomSeed = np.random.rand()
             tmpTotal = 0
             for index, i in enumerate(self.strategyProbList):
-                if tmpTotal <= randomSeed and tmpTotal + i > randomSeed:
+                if tmpTotal <= randomSeed < tmpTotal + i:
                     return index
                 else:
                     tmpTotal += i

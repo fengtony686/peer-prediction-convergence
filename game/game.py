@@ -1,6 +1,6 @@
-'''
+"""
 --------------------- Class of Game ----------------------------
-'''
+"""
 
 import numpy as np
 from game.agent import agent
@@ -11,7 +11,7 @@ class informationElicitationGame:
     def __init__(self, probabilityDict, markovian=False):
         self.markovian = markovian
         self.probabilityDict = probabilityDict
-        if self.markovian == False:
+        if not self.markovian:
             self.agentNum = len(list(self.probabilityDict.keys())[0])
             self.optionNum = int(
                 np.power(len(probabilityDict), 1 / self.agentNum))
@@ -36,12 +36,12 @@ class informationElicitationGame:
         return int(report)
 
     def generateSignals(self):
-        if self.markovian == False:
+        if not self.markovian:
             seed = np.random.rand()
             leftBound = 0
             for (signal, probability) in self.probabilityDict.items():
                 rightBound = leftBound + probability
-                if seed < rightBound and seed >= leftBound:
+                if rightBound > seed >= leftBound:
                     return signal
                 else:
                     leftBound = rightBound
@@ -56,7 +56,7 @@ class informationElicitationGame:
             leftBound = 0
             for (signal, probability) in self.probabilityDict[int(lastSignal)].items():
                 rightBound = leftBound + probability
-                if seed < rightBound and seed >= leftBound:
+                if rightBound > seed >= leftBound:
                     return signal
                 else:
                     leftBound = rightBound
@@ -98,7 +98,7 @@ class informationElicitationGame:
 
     def agreement(self, currentReport, currentAgentIndex):
         payoff = -1
-        if (self.reports.shape[1] == 0):
+        if self.reports.shape[1] == 0:
             return 0
         for i in currentReport:
             if i == currentReport[currentAgentIndex]:

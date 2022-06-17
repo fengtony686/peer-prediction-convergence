@@ -1,6 +1,6 @@
-'''
+"""
 ----------------------- Converge Rate Drawing ---------------------------------
-'''
+"""
 
 import numpy as np
 from game.game import informationElicitationGame
