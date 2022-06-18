@@ -31,7 +31,7 @@ Here is one of our experiment results:
 ├── results/                # our running samples
 ├── main.py                 # main file
 ├── .gitignore              # exclude some annoying files from git
-├── LICENSE                 # MIT licence
+├── LICENSE                 # MIT license
 └── README.md               # what you are reading now
 ```
 
