@@ -1,4 +1,5 @@
 # Peer Prediction for Learning Agents
+[![](https://tokei.rs/b1/github/fengtony686/peer-prediction-convergence)](https://github.com/fengtony686/peer-prediction-convergence)    
 This repository contains code of numerical experiments for paper:  
 **Peer Prediction for Learning Agents**  
 [Shi Feng](https://fengshi.link), [Fang-Yi Yu](http://www-personal.umich.edu/~fayu/), [Yiling Chen](https://yiling.seas.harvard.edu/)  
