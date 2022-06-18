@@ -28,6 +28,7 @@ Here is one of our experiment results:
 ├── utils/                  # drawing simulation results
 │   ├── converge_rate.py
 │   └── error_bar.py
+├── results/                # our running samples
 ├── main.py                 # main file
 ├── .gitignore              # exclude some annoying files from git
 ├── LICENSE                 # MIT licence
