@@ -3,7 +3,7 @@
 This repository contains code of numerical experiments for paper:  
 **Peer Prediction for Learning Agents**  
 [Shi Feng](https://fengshi.link), [Fang-Yi Yu](http://www-personal.umich.edu/~fayu/), [Yiling Chen](https://yiling.seas.harvard.edu/)  
-[[ArXiv Version](not available yet)]
+[[ArXiv Version](https://arxiv.org/abs/2208.04433)]
 
 ## Usage
 If you want to draw convergence rates of learning algorithms in CA mechanism, you need to run
