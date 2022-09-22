@@ -2,7 +2,7 @@
 [![](https://tokei.rs/b1/github/fengtony686/peer-prediction-convergence)](https://github.com/fengtony686/peer-prediction-convergence)    
 This repository contains code of numerical experiments for paper:  
 **Peer Prediction for Learning Agents**  
-NeurIPS 2022
+NeurIPS 2022  
 [Shi Feng](https://fengshi.link), [Fang-Yi Yu](http://www-personal.umich.edu/~fayu/), [Yiling Chen](https://yiling.seas.harvard.edu/)  
 [[ArXiv Version](https://arxiv.org/abs/2208.04433)]
 
