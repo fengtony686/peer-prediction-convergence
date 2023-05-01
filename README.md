@@ -38,4 +38,4 @@ Here is one of our experiment results:
 ```
 
 ## Contact
-If you have any questions, feel free to contact us through email (fengs19@mails.tsinghua.edu.cn) or Github issues. Enjoy!
+If you have any questions, feel free to contact us through email (shifeng-thu@outlook.com) or Github issues. Enjoy!
